@@ -9,18 +9,18 @@ service Drone {
 
 message Status {
   string message = 1;
-  int32 status_code = 2;
+  int32 statusCode = 2;
 }
 
 message FileFragment {
   string filename = 1;
-  int32 fragment_id = 2;
-  bytes fragment_content = 3;
+  int32 fragmentId = 2;
+  bytes fragmentContent = 3;
 }
 
 message FileRequestPayload {
-  string file_path = 1;
-  int32 fragment_size = 2;
+  string filePath = 1;
+  int32 fragmentSize = 2;
 }
 
 message FileRequest {

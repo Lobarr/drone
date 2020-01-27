@@ -2,6 +2,9 @@ workspace(name = "drone")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+
+all_content = """filegroup(name = "all", srcs = glob(["**"]), visibility = ["//visibility:public"])"""
+
 http_archive(
     name = "rules_proto",
     sha256 = "602e7161d9195e50246177e7c55b2f39950a9cf7366f74ed5f22fd45750cd208",
@@ -33,20 +36,28 @@ git_repository(
     remote = "https://github.com/protocolbuffers/protobuf",
     shallow_since = "1558721209 -0700",
 )
+git_repository(
+    name = "rules_cc",
+    remote = "https://github.com/bazelbuild/rules_cc/",
+    commit = "8774a4decd63f45a636f40a75700c06b7ea9d30a",
+    shallow_since = "1579787417 -0800"
+)
+http_archive(
+   name = "rules_foreign_cc",
+   strip_prefix = "rules_foreign_cc-master",
+   urls = ["https://github.com/bazelbuild/rules_foreign_cc/archive/master.zip"],
+)
+http_archive(
+    name = "leveldb",
+    strip_prefix = "leveldb-1.22",
+    build_file_content = all_content,
+    urls = [
+        "https://github.com/google/leveldb/archive/1.22.tar.gz"
+    ],
+    sha256 = "55423cac9e3306f4a9502c738a001e4a339d1a38ffbee7572d4a07d5d63949b2"
+)
 
-load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
-load("@io_bazel_rules_go//go:deps.bzl", "go_rules_dependencies", "go_register_toolchains")
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies", "go_repository")
-load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
-
-rules_proto_dependencies()
-rules_proto_toolchains()
-go_rules_dependencies()
-go_register_toolchains()
-gazelle_dependencies()
-protobuf_deps()
-
-
 go_repository(
     name = "org_golang_google_grpc",
     build_file_proto_mode = "disable",
@@ -61,10 +72,25 @@ go_repository(
     sum = "h1:oWX7TPOiFAMXLq8o0ikBYfCJVlRHBcsciT5bXOrH628=",
     version = "v0.0.0-20190311183353-d8887717615a",
 )
-
 go_repository(
     name = "org_golang_x_text",
     importpath = "golang.org/x/text",
     sum = "h1:g61tztE5qeGQ89tm6NTjjM9VPIm088od1l6aSorWRWg=",
     version = "v0.3.0",
 )
+
+
+load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
+load("@io_bazel_rules_go//go:deps.bzl", "go_rules_dependencies", "go_register_toolchains")
+load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
+load("@rules_foreign_cc//:workspace_definitions.bzl", "rules_foreign_cc_dependencies")
+
+rules_proto_dependencies()
+rules_proto_toolchains()
+go_rules_dependencies()
+go_register_toolchains()
+gazelle_dependencies()
+protobuf_deps()
+rules_foreign_cc_dependencies()
+
+
