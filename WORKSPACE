@@ -56,6 +56,15 @@ http_archive(
     ],
     sha256 = "55423cac9e3306f4a9502c738a001e4a339d1a38ffbee7572d4a07d5d63949b2"
 )
+http_archive(
+    name = "json",
+    strip_prefix = "json-3.7.3",
+    build_file_content = all_content,
+    urls = [
+        "https://github.com/nlohmann/json/archive/v3.7.3.tar.gz"
+    ],
+    sha256 = "249548f4867417d66ae46b338dfe0a2805f3323e81c9e9b83c89f3adbfde6f31"
+)
 
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies", "go_repository")
 go_repository(

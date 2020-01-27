@@ -26,13 +26,28 @@ go_proto_library(
 cmake_external(
   name = "leveldb",
   lib_source = "@leveldb//:all",
-  cmake_options = ["-DCMAKE_BUILD_TYPE=Release"],
+  cache_entries = {
+    "CMAKE_BUILD_TYPE": "Release" 
+  },
+  visibility = ["//visibility:public"],
+)
+
+cmake_external(
+  name = "json",
+  lib_source = "@json//:all",
+  visibility = ["//visibility:public"],
 )
 
 cc_binary(
   name = "drone_daemon",
-  srcs = ["main.cc", "FileController.h"],
-  deps = [ ":drone_proto_cc", ":leveldb"],
+  srcs = ["main.cc", "fileController.hpp"],
+  deps = [
+    ":drone_proto_cc",
+    ":leveldb"
+  ],
+  # data = [
+  #   ":tmp/dronedb"
+  # ]
 )
 
 
