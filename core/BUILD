@@ -24,17 +24,22 @@ go_proto_library(
 )
 
 cmake_external(
-  name = "leveldb",
-  lib_source = "@leveldb//:all",
-  cache_entries = {
-    "CMAKE_BUILD_TYPE": "Release" 
-  },
+  name = "rocksdb",
+  lib_source = "@rocksdb//:all",
+  # cache_entries = {
+  #   "CMAKE_BUILD_TYPE": "Release" 
+  # },
+  cmake_options = ["-Wno-error=dev"],
   visibility = ["//visibility:public"],
 )
 
 cmake_external(
-  name = "json",
-  lib_source = "@json//:all",
+  name = "msgpack",
+  lib_source = "@msgpack//:all",
+  cache_entries = {
+    # "MSGPACK_CXX": "ON"
+  },
+  headers_only = True,
   visibility = ["//visibility:public"],
 )
 

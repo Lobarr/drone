@@ -48,22 +48,22 @@ http_archive(
    urls = ["https://github.com/bazelbuild/rules_foreign_cc/archive/master.zip"],
 )
 http_archive(
-    name = "leveldb",
-    strip_prefix = "leveldb-1.22",
+    name = "rocksdb",
+    strip_prefix = "rocksdb-6.6.3",
     build_file_content = all_content,
     urls = [
-        "https://github.com/google/leveldb/archive/1.22.tar.gz"
+        "https://github.com/facebook/rocksdb/archive/v6.6.3.tar.gz"
     ],
-    sha256 = "55423cac9e3306f4a9502c738a001e4a339d1a38ffbee7572d4a07d5d63949b2"
+    # sha256 = "55423cac9e3306f4a9502c738a001e4a339d1a38ffbee7572d4a07d5d63949b2"
 )
 http_archive(
-    name = "json",
-    strip_prefix = "json-3.7.3",
+    name = "msgpack",
+    strip_prefix = "msgpack-3.2.1",
     build_file_content = all_content,
     urls = [
-        "https://github.com/nlohmann/json/archive/v3.7.3.tar.gz"
+        "https://github.com/msgpack/msgpack-c/releases/download/cpp-3.2.1/msgpack-3.2.1.tar.gz"
     ],
-    sha256 = "249548f4867417d66ae46b338dfe0a2805f3323e81c9e9b83c89f3adbfde6f31"
+    sha256 = "433cbcd741e1813db9ae4b2e192b83ac7b1d2dd7968a3e11470eacc6f4ab58d2"
 )
 
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies", "go_repository")
