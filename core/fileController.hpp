@@ -12,7 +12,7 @@
 enum DBStatus {
   OK = 0,
   NOT_OK = 1
-}
+};
 
 class FileController {
   public:

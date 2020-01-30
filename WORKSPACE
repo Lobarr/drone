@@ -3,8 +3,6 @@ workspace(name = "drone")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
-all_content = """filegroup(name = "all", srcs = glob(["**"]), visibility = ["//visibility:public"])"""
-
 http_archive(
     name = "rules_proto",
     sha256 = "602e7161d9195e50246177e7c55b2f39950a9cf7366f74ed5f22fd45750cd208",
@@ -47,25 +45,6 @@ http_archive(
    strip_prefix = "rules_foreign_cc-master",
    urls = ["https://github.com/bazelbuild/rules_foreign_cc/archive/master.zip"],
 )
-http_archive(
-    name = "rocksdb",
-    strip_prefix = "rocksdb-6.6.3",
-    build_file_content = all_content,
-    urls = [
-        "https://github.com/facebook/rocksdb/archive/v6.6.3.tar.gz"
-    ],
-    # sha256 = "55423cac9e3306f4a9502c738a001e4a339d1a38ffbee7572d4a07d5d63949b2"
-)
-http_archive(
-    name = "msgpack",
-    strip_prefix = "msgpack-3.2.1",
-    build_file_content = all_content,
-    urls = [
-        "https://github.com/msgpack/msgpack-c/releases/download/cpp-3.2.1/msgpack-3.2.1.tar.gz"
-    ],
-    sha256 = "433cbcd741e1813db9ae4b2e192b83ac7b1d2dd7968a3e11470eacc6f4ab58d2"
-)
-
 git_repository(
     name = "com_github_nelhage_rules_boost",
     commit = "9f9fb8b2f0213989247c9d5c0e814a8451d18d7f",
@@ -82,7 +61,6 @@ go_repository(
     sum = "h1:J0UbZOIrCAl+fpTOf8YLs4dJo8L/owV4LYVtAXQoPkw=",
     version = "v1.22.0",
 )
-
 go_repository(
     name = "org_golang_x_net",
     importpath = "golang.org/x/net",
@@ -100,7 +78,6 @@ go_repository(
     importpath = "github.com/syndtr/goleveldb",
     commit = "758128399b1df3a87e92df6c26c1d2063da8fabe"
 )
-
 go_repository(
     name = "com_github_golang_snappy",
     importpath = "github.com/golang/snappy",

@@ -37,19 +37,15 @@ cc_library(
     ],
     deps = [
         ":drone_proto_cc",
-        ":drone_db_service_cc",
         "@boost//:uuid",
+        "//services/db:drone_db_service.cc"
     ],
     visibility = ["//visibility:public"],
 )
 
-cc_import(
-    name = "drone_db_service_cc",
-    hdrs = ["services/db/drone_db_service.h"],
-    shared_library = "//services/db:libdrone_db_service.so",
-)
-
 cc_binary(
     name = "drone_daemon",
-    deps = [":drone_daemon_library"],
+    deps = [
+        ":drone_daemon_library",
+    ],
 )

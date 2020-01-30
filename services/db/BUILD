@@ -1,13 +1,12 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
-
-
-
+# load("@rules_cc//cc:defs.bzl", "cc_import")
 go_binary(
     name = "drone_db_service",
     embed = [":drone_db_service_library"],
-    linkmode = "c-shared",
+    linkmode = "c-archive",
     visibility = ["//visibility:public"],
 )
+
 go_library(
     name = "drone_db_service_library",
     srcs = ["dbService.go"],

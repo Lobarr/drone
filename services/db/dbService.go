@@ -16,6 +16,7 @@ var (
 //CreateDBService initializes db and mutex
 //export CreateDBService
 func CreateDBService(dbFileName string) int32 {
+	fmt.Println("inside the go code")
 	fmt.Fprintln(os.Stdout, dbFileName)
 	// if db != nil {
 	// 	fmt.Fprintln(os.Stdout, "DBService has already been created")
