@@ -1,20 +1,19 @@
 #include "fileController.hpp"
 
-FileController::FileController(DBService* dbService) : dbService(dbService) {}
-FileController::~FileController() {}
 
-bool FileController::fileExists(const std::string& fileName) {
-  std::ifstream f(fileName);
-  return f.good();
+FileController::FileController(const std::string& dbFileName) {
+  GoString dbFileNameGo = { dbFileName.c_str(), dbFileName.size() };
+  GoInt32 status = CreateDBService(dbFileNameGo);
+  if (status != DBStatus::OK) {
+    std::cerr << "Unable to create db service" << std::endl;
+  }
 }
 
-// void FileController::fragmentizeFile(std::string* fileName) {
 
-// };
-
-
-// void FileController::assembleFileFragments(std::vector<core::FileFragment>* fileFragments) {
-
-// };
-
-
+FileController::~FileController() {
+  GoUint8 status = CloseDBService();
+  bool ok = (bool)status;
+  if (!ok) {
+    std::cerr << "Unable to close db service" << std::endl;
+  }
+}

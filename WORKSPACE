@@ -65,21 +65,12 @@ http_archive(
     ],
     sha256 = "433cbcd741e1813db9ae4b2e192b83ac7b1d2dd7968a3e11470eacc6f4ab58d2"
 )
-http_archive(
-    name = "uuid",
-    strip_prefix = "uuid-boost-1.72.0",
-    build_file_content = all_content,
-    urls = [
-        "https://github.com/boostorg/uuid/archive/boost-1.72.0.tar.gz"
-    ],
-    sha256 = "d4f3b92896504b993970815dc4e72adc732c55b661fe5560352ffa920d40505e"
-)
-http_archive(
-    name = "boost",
-    build_file_content = all_content,
-    strip_prefix = "boost_1_68_0",
-    sha256 = "da3411ea45622579d419bfda66f45cd0f8c32a181d84adfa936f5688388995cf",
-    urls = ["https://dl.bintray.com/boostorg/release/1.68.0/source/boost_1_68_0.tar.gz"],
+
+git_repository(
+    name = "com_github_nelhage_rules_boost",
+    commit = "9f9fb8b2f0213989247c9d5c0e814a8451d18d7f",
+    remote = "https://github.com/nelhage/rules_boost",
+    shallow_since = "1570056263 -0700",
 )
 
 
@@ -104,12 +95,24 @@ go_repository(
     sum = "h1:g61tztE5qeGQ89tm6NTjjM9VPIm088od1l6aSorWRWg=",
     version = "v0.3.0",
 )
+go_repository(
+    name = "com_github_syndtr_goleveldb",
+    importpath = "github.com/syndtr/goleveldb",
+    commit = "758128399b1df3a87e92df6c26c1d2063da8fabe"
+)
+
+go_repository(
+    name = "com_github_golang_snappy",
+    importpath = "github.com/golang/snappy",
+    commit = "ff6b7dc882cf4cfba7ee0b9f7dcc1ac096c554aa"
+)
 
 
 load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
 load("@io_bazel_rules_go//go:deps.bzl", "go_rules_dependencies", "go_register_toolchains")
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 load("@rules_foreign_cc//:workspace_definitions.bzl", "rules_foreign_cc_dependencies")
+load("@com_github_nelhage_rules_boost//:boost/boost.bzl", "boost_deps")
 
 rules_proto_dependencies()
 rules_proto_toolchains()
@@ -118,5 +121,5 @@ go_register_toolchains()
 gazelle_dependencies()
 protobuf_deps()
 rules_foreign_cc_dependencies()
-
+boost_deps()
 

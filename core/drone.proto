@@ -20,7 +20,7 @@ message FileFragment {
 
 message FileRequestPayload {
   string filePath = 1;
-  int32 fragmentSize = 2;
+  int32 totalFragments = 2;
 }
 
 message FileRequest {
