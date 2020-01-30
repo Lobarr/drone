@@ -2,6 +2,7 @@ load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_proto_library")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("@io_bazel_rules_go//proto:def.bzl", "go_proto_library")
 load("@rules_foreign_cc//tools/build_defs:cmake.bzl", "cmake_external")
+load("@rules_foreign_cc//tools/build_defs:boost_build.bzl", "boost_build")
 
 proto_library(
   name = "drone_proto",
@@ -41,6 +42,14 @@ cmake_external(
   },
   headers_only = True,
   visibility = ["//visibility:public"],
+)
+
+boost_build(
+    name = "boost_uuid",
+    lib_source = "@boost//:all",
+    static_libraries = ["libboost_uuid.a"],
+    user_options = ["--with-uuid"],
+    visibility = ["//visibility:public"],
 )
 
 cc_binary(

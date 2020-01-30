@@ -12,80 +12,62 @@ DBService::~DBService() {
 void DBService::initDatabase() {
   rocksdb::Options options;
   options.create_if_missing = true;
-  rocksdb::Status status = rocksdb::DB::Open(options, "/tmp/dronedb", &db);
+  rocksdb::Status status = rocksdb::DB::Open(options, "/tmp/dronedb", db);
   assert(status.ok());
 }
 
-void DBService::putFileFragment(const std::string& fileName, core::FileFragment& fileFragment) {
-  std::vector<core::FileFragment&> fileFragments;
-  std::string* fileFragmentsBytes;
-  std::string* fileBytes;
-  
-  bool ok = fileFragment.SerializeToString(fileBytes);
-  if (!ok) throw "Unable to serialize fileFragment";
-  
-  rocksdb::Status status = db->Get(rocksdb::ReadOptions(), fileName, fileFragmentsBytes);
+std::string* DBService::putFileFragment(const std::string& fileName, const core::FileFragment& fileFragment) {
+  rocksdb::Status status = db->Get(rocksdb::ReadOptions(), fileName, serializeFileFragment(fileFragment));
+  // generate uuid
   if (status.IsNotFound()) {
     fileFragments.push_back(fileFragment);
-  } else {
+  } else {  
     // fileFragments = fromMsgPack()
   }
 }
-
-// void DBService::putFileFragments(const std::string& fileName, const std::vector<core::FileFragment>& fileFragments) {
-
-// }
 
 // std::vector<core::FileFragment*> DBService::getFileFragments(std::string& fileName) const {
 //   std::vector<core::FileFragment*> fileFragments;
 //   rocksdb::Status dbStatus = db->Get(rocksdb::ReadOptions(), fileName, &fileName);
 // }
 
-msgpack::sbuffer* DBService::toMsgPack(const std::vector<core::FileFragment*>& fileFragments) {
-  std::vector<std::string> fileFragmentBytes = fileFragmentsToBytes(fileFragments);
+msgpack::sbuffer* DBService::toMsgPack(const core::FileFragment& fileFragment) {
+  std::string fileFragmentBytes = fileFragmentToBytes(fileFragment);
   msgpack::sbuffer* sBuffer;
+  
   msgpack::pack(sBuffer, fileFragmentsBytes);
+
   return sBuffer;
 }
 
-std::vector<core::FileFragment*>* fromMsgPack(const msgpack::sbuffer& sBuffer) {
-  std::vector<std::string> fileFragmentsBytes;
-  msgpack::unpacked msg;
-  msgpack::object obj;
+core::FileFragment* fromMsgPack(const msgpack::sbuffer& sBuffer) {
+  std::string* fileFragmentBytes;
+  msgpack::unpacked* msg;
+  msgpack::object* obj;
 
-  msgpack::unpack(&msg, sBuffer.data(), sBuffer.size());
-  obj = msg.get();
-  obj.convert(&fileFragmentsBytes);
+  msgpack::unpack(msg, sBuffer.data(), sBuffer.size());
+  obj = msg->get();
+  obj->convert(fileFragmentBytes);
 
-  return bytesToFileFragments(fileFragmentsBytes);
+  return deseralizeFileFragment(fileFragmentBytes);
 }
 
 
-std::vector<std::string> DBService::fileFragmentsToBytes(const std::vector<core::FileFragment*>& fileFragments) {
-  std::vector<std::string> fileFragmentsBytes;
-  std::vector<core::FileFragment*>::iterator fileFragmentsIterator;
+std::string* DBService::serializeFileFragment(const core::FileFragment& fileFragment) {
+  std::string* fileFragmentsBytes;
+  bool ok = fileFragment.SerializeToString(fileFragmentBytes);
 
-  for (fileFragmentsIterator = fileFragments.begin(); fileFragmentsIterator < fileFragments.end(); fileFragmentsIterator++) {
-    std::string fileFragmentBytes;
-    bool ok = (*fileFragmentsIterator)->SerializeToString(&fileFragmentBytes);
-    if (!ok) throw "Unable to serialize fileFragment";
-    fileFragmentsBytes.push_back(fileFragmentBytes);
-  }
+  if (!ok) throw "Unable to serialize fileFragment";
 
   return fileFragmentsBytes;
 }
 
 
-std::vector<core::FileFragment*>* DBService::bytesToFileFragments(std::vector<std::string> fileFragmentBytes) {
-  std::vector<core::FileFragment*>* fileFragments;
-  std::vector<std::string>::iterator fileFragmentsBytesIterator;
+core::FileFragment* DBService::deserializeFileFragment(std::string& fileFragmentBytes) {
+  core::FileFragment* fileFragment;
+  bool ok = fileFragment->ParseFromString(fileFragmentBytes);
 
-  for(fileFragmentsBytesIterator = fileFragmentsBytes.begin(); fileFragmentsBytesIterator < fileFragmentsBytes.end(); fileFragmentsBytesIterator++) {
-    core::FileFragment* fileFragment;
-    bool ok = fileFragment->ParseFromString(*fileFragmentsBytesIterator)
-    if (!ok) throw "Unable to deserialize fileFragment";
-    fileFragments.push_back(fileFragment);
-  }
+  if (!ok) throw "Unable to deserialize fileFragment";
 
-  return fileFragments;
+  return fileFragment;
 }

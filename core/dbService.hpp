@@ -10,13 +10,12 @@ class DBService {
     DBService();
     ~DBService();
     void initDatabase();
-    void putFileFragment(const std::string& fileName, core::FileFragment& fileFragment);
-    void putFileFragments(const std::string& fileName, const std::vector<core::FileFragment*> fileFragments);
-    std::vector<core::FileFragments> getFileFragments(std::string& fileName) const;
-    msgpack::sbuffer* toMsgPack(const std::vector<core::FileFragment*>& fileFragments);
-    std::vector<core::FileFragment*>* fromMsgPack(const msgpack::sbuffer& buffer);
-    std::vector<std::string> fileFragmentsToBytes(const std::vector<core::FileFragment*>& fileFragments);
-    std::vector<core::FileFragment*>* bytesToFileFragments(std::vector<std::string> fileFragmentBytes);
+    std::string* putFileFragment(const std::string& fileName, const core::FileFragment& fileFragment);
+    core::FileFragment* getFileFragment(const std::string& id);
+    core::FileFragment* fromMsgPack(const msgpack::sbuffer& buffer);
+    msgpack::sbuffer* toMsgPack(const core::FileFragment& fileFragment);
+    std::string* serializeFileFragment(const core::FileFragment& fileFragment);
+    core::FileFragment* deserializeFileFragment(std::string& fileFragmentBytes);
   private:
     rocksdb::DB* db;
 };
