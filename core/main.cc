@@ -1,10 +1,10 @@
 #include <iostream>
-#include "fileContainer.hpp"
+#include "core/fileController.hpp"
+#include "core/constants.hpp"
 
 int main(){
-  std::string dbName = "someDbName";
-  int totalFragments = 10;
-  FileContainer fileController(dbName, totalFragments);
+  std::string dbName = DRONE_DB_PATH;
+  FileController fileController(dbName);
   std::cout << "Hello, world" << std::endl;
   return 0;
 }

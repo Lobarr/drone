@@ -14,29 +14,30 @@ var (
 )
 
 //CreateDBService initializes db and mutex
-//export CreateDBService
-func CreateDBService(dbFileName string) int32 {
+//export createDBService
+func createDBService(dbFileName string) int32 {
 	fmt.Println("inside the go code")
 	fmt.Fprintln(os.Stdout, dbFileName)
-	// if db != nil {
-	// 	fmt.Fprintln(os.Stdout, "DBService has already been created")
-	// }
+	if db != nil {
+		fmt.Fprintln(os.Stdout, "DBService has already been created")
+	}
 
-	// dbConnection, err := leveldb.OpenFile(dbFileName, nil)
-	// if err != nil {
-	// 	return 1
-	// }
+	dbConnection, err := leveldb.OpenFile(dbFileName, nil)
+	if err != nil {
+		return 1
+	}
 
-	// db = dbConnection
-	// mutex = &sync.Mutex{}
+	db = dbConnection
+	mutex = &sync.Mutex{}
 	return 0
 }
 
-// CloseDBService closes db connection
-//export CloseDBService
-func CloseDBService() int32 {
+// closeDBService closes db connection
+//export closeDBService
+func closeDBService() int32 {
 	mutex.Lock()
 	defer mutex.Unlock()
+	fmt.Println("Closing database")
 	err := db.Close()
 	if err != nil {
 		return 1
@@ -44,9 +45,9 @@ func CloseDBService() int32 {
 	return 0
 }
 
-// PutFileFragment writes file fragment to db
-//export PutFileFragment
-func PutFileFragment(fragmentID string, fileFragment string) int32 {
+// putFileFragment writes file fragment to db
+//export putFileFragment
+func putFileFragment(fragmentID string, fileFragment string) int32 {
 	mutex.Lock()
 	defer mutex.Unlock()
 	err := db.Put([]byte(fragmentID), []byte(fileFragment), nil)
@@ -56,9 +57,9 @@ func PutFileFragment(fragmentID string, fileFragment string) int32 {
 	return 0
 }
 
-// GetFileFragent gets file fragment from db
-//export GetFileFragent
-func GetFileFragent(fragmentID string) (string, int32) {
+// getFileFragment gets file fragment from db
+//export getFileFragment
+func getFileFragment(fragmentID string) (string, int32) {
 	mutex.Lock()
 	defer mutex.Unlock()
 	data, err := db.Get([]byte(fragmentID), nil)
@@ -68,9 +69,9 @@ func GetFileFragent(fragmentID string) (string, int32) {
 	return string(data), 0
 }
 
-// RemoveFileFragments removes file fragments from db
-//export RemoveFileFragments
-func RemoveFileFragments(fileFragmentIDs []string) int32 {
+// removeFileFragments removes file fragments from db
+//export removeFileFragments
+func removeFileFragments(fileFragmentIDs []string) int32 {
 	
 	batch := new(leveldb.Batch)
 	for _, fileFragmentID := range fileFragmentIDs {

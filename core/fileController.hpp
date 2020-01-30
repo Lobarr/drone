@@ -3,6 +3,7 @@
 
 #include <string>
 #include <iostream>
+#include <fstream>
 #include <map>
 #include "core/drone.pb.h"
 #include "services/db/drone_db_service.h"
@@ -18,9 +19,9 @@ class FileController {
   public:
     FileController(const std::string& dbFileName);
     ~FileController();
-    // void fragmentizeFile(const std::string* fileName);
-    // void assembleFileFragments(const std::vector<core::FileFragment>* fileFragments);
-    // bool fileExists(const std::string& fileName);
+    bool fileExists(const std::string& fileName);
+    void putFileFragment(const std::string& fileName, const core::FileFragment& fileFragment);
+    void assembleFile(const std::string& fileName);
   private:
     std::map<std::string, FileContainer> filesMap; // fileName -> fileContainer
 };

@@ -12,6 +12,8 @@ class FileContainer {
     void addFragment(const std::string& fragmentKey);
     std::vector<std::string> getFragments() const;
     bool isComplete() const;
+    std::string getFileName() const;
+    std::tuple<std::string, int> fromFileFragmentReturn(getFileFragment_return getFileFragmentReturn);
   private:
     std::string fileName;
     std::vector<std::string> fragmentKeys;

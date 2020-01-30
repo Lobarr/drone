@@ -34,6 +34,7 @@ cc_library(
         "fileController.hpp",
         "fileContainer.hpp",
         "serializeUtil.hpp",
+        "constants.hpp",
     ],
     deps = [
         ":drone_proto_cc",
