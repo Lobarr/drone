@@ -14,7 +14,4 @@ go_library(
     importpath = "github.com/Lobarr/drone/services/db",
     visibility = ["//visibility:public"],
     deps = ["@com_github_syndtr_goleveldb//leveldb:go_default_library"],
-    data = [
-        "drone.db"
-    ]
 )

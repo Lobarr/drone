@@ -2,7 +2,6 @@
 
 
 FileController::FileController(const std::string& dbFileName) {
-  std::cout << "inside file controller" << std::endl;
   GoString dbFileNameGo = { 
     dbFileName.c_str(), 
     static_cast<ptrdiff_t>(dbFileName.size()) 
@@ -28,14 +27,14 @@ bool FileController::fileExists(const std::string& filePath) {
 }
 
 
-void FileController::putFileFragment(const core::FileFragment& filefragment) {
+void FileController::putFileFragment(const core::FileFragment& fileFragment) {
   try {
     mutex.lock();
     boost::uuids::random_generator generator;
     boost::uuids::uuid fileFragmentID = generator();
-    std::string fileFragmentIDString = boost::lexical_cast<std::string>(fileFragmentID);
-    std::string* fileFragmentBytes = serializeFileFragment(filefragment);
-    FileContainer fileContainer = filesMap.at(filefragment.filepath());
+    std::string fileFragmentIDString = boost::uuids::to_string(fileFragmentID);
+    std::string* fileFragmentBytes = serializeFileFragment(fileFragment);
+    FileContainer fileContainer = filesMap.at(fileFragment.filepath());
     GoString fileFragmentIDGo = {
       fileFragmentIDString.c_str(),
       static_cast<ptrdiff_t>(fileFragmentIDString.size())
@@ -53,7 +52,7 @@ void FileController::putFileFragment(const core::FileFragment& filefragment) {
     fileContainer.addFragment(fileFragmentIDString);
     filesMap[fileContainer.getFilePath()] = fileContainer;
     if (fileContainer.isComplete()) {
-      std::thread fileAssemblyThread(&assembleFile, fileContainer.getFilePath());
+      boost::thread fileAssemblyThread(&FileController::assembleFile, this, fileContainer.getFilePath());
       fileAssemblyThread.join();
     }
     mutex.unlock();
@@ -72,7 +71,7 @@ void FileController::createFileContainer(const core::FileRequestPayload& fileReq
     mutex.lock();
     filesMap.insert(
       std::pair<std::string, FileContainer>(
-        fileRequestPayload.filepath(), 
+        filePath, 
         fileContainer
       )
     );
@@ -81,7 +80,7 @@ void FileController::createFileContainer(const core::FileRequestPayload& fileReq
     return;
   }
 
-  std::cout << "File already being received" << std::endl;
+  std::cerr << "File already being received" << std::endl;
 }
 
 
@@ -127,6 +126,7 @@ void FileController::assembleFile(const std::string& filePath) {
     }
 
     file.close();
+    filesMap.erase(filePath);
     mutex.unlock();
   } catch(std::string err) {
     std::cerr << err << std::endl;

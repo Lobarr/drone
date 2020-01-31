@@ -16,7 +16,6 @@ var (
 //CreateDBService initializes db and mutex
 //export createDBService
 func createDBService(dbFileName string) int32 {
-	fmt.Println("inside the go code")
 	fmt.Fprintln(os.Stdout, dbFileName)
 	if db != nil {
 		fmt.Fprintln(os.Stdout, "DBService has already been created")
@@ -48,6 +47,7 @@ func closeDBService() int32 {
 // putFileFragmentInDB writes file fragment to db
 //export putFileFragmentInDB
 func putFileFragmentInDB(fragmentID string, fileFragment string) int32 {
+	fmt.Fprintln(os.Stdout, "puttinf fileFragment in db")
 	mutex.Lock()
 	defer mutex.Unlock()
 	err := db.Put([]byte(fragmentID), []byte(fileFragment), nil)

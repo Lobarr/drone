@@ -7,6 +7,7 @@
 
 class FileContainer {
   public:
+    FileContainer();
     FileContainer(std::string& filePath, int& totalFragments);
     ~FileContainer();
     void addFragment(const std::string& fragmentKey);

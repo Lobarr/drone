@@ -1,5 +1,8 @@
 #include "fileContainer.hpp"
 
+FileContainer::FileContainer() {}
+
+
 FileContainer::FileContainer(std::string& filePath, int& totalFragments) {
   filePath = filePath;
   totalFragments = totalFragments;

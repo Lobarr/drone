@@ -41,9 +41,17 @@ git_repository(
     shallow_since = "1579787417 -0800"
 )
 http_archive(
-   name = "rules_foreign_cc",
-   strip_prefix = "rules_foreign_cc-master",
-   urls = ["https://github.com/bazelbuild/rules_foreign_cc/archive/master.zip"],
+    name = "com_github_grpc_grpc",
+    urls = [
+        "https://github.com/grpc/grpc/archive/v1.26.0.tar.gz",
+    ],
+    strip_prefix = "grpc-1.26.0",
+    sha256 = "2fcb7f1ab160d6fd3aaade64520be3e5446fc4c6fa7ba6581afdc4e26094bd81",
+)
+http_archive(
+    name = "rules_foreign_cc",
+    strip_prefix = "rules_foreign_cc-master",
+    urls = ["https://github.com/bazelbuild/rules_foreign_cc/archive/master.zip"],
 )
 git_repository(
     name = "com_github_nelhage_rules_boost",
@@ -51,7 +59,6 @@ git_repository(
     remote = "https://github.com/nelhage/rules_boost",
     shallow_since = "1570056263 -0700",
 )
-
 
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies", "go_repository")
 go_repository(
@@ -90,6 +97,8 @@ load("@io_bazel_rules_go//go:deps.bzl", "go_rules_dependencies", "go_register_to
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 load("@rules_foreign_cc//:workspace_definitions.bzl", "rules_foreign_cc_dependencies")
 load("@com_github_nelhage_rules_boost//:boost/boost.bzl", "boost_deps")
+load("@com_github_grpc_grpc//bazel:grpc_deps.bzl", "grpc_deps")
+load("@com_github_grpc_grpc//bazel:grpc_extra_deps.bzl", "grpc_extra_deps")
 
 rules_proto_dependencies()
 rules_proto_toolchains()
@@ -99,4 +108,6 @@ gazelle_dependencies()
 protobuf_deps()
 rules_foreign_cc_dependencies()
 boost_deps()
+grpc_deps()
+grpc_extra_deps()
 

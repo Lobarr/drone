@@ -1,11 +1,19 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_proto_library")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("@io_bazel_rules_go//proto:def.bzl", "go_proto_library")
+load("@com_github_grpc_grpc//bazel:cc_grpc_library.bzl", "cc_grpc_library")
+
 
 proto_library(
     name = "drone_proto",
     srcs = ["drone.proto"],
     visibility = ["//visibility:public"],
+)
+
+cc_grpc_library(
+    name = "drone_proto_grpc",
+    srcs = ["drone.proto"],
+    deps = [":drone_proto_cc"],
 )
 
 cc_proto_library(
@@ -38,8 +46,10 @@ cc_library(
     ],
     deps = [
         ":drone_proto_cc",
+        ":drone_proto_grpc",
         "@boost//:uuid",
-        "//services/db:drone_db_service.cc"
+        "@boost//:thread",
+        "//services/db:drone_db_service.cc",
     ],
     visibility = ["//visibility:public"],
 )
