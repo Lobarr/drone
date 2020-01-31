@@ -13,7 +13,7 @@ message Status {
 }
 
 message FileFragment {
-  string filename = 1;
+  string filePath = 1;
   int32 fragmentId = 2;
   bytes fragmentContent = 3;
 }
