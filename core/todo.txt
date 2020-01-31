@@ -1,0 +1,11 @@
+- Create Log Service (experiment)
+  - service constantly reads in standard output and error to capture log and formats correctly to log file and console
+  - format 
+  - [*from*][*log_type*] *log_body*
+    e.g [FileController][Error] Unable to create database
+
+- Merge services folder to core
+
+- Implement asnyc server
+
+- Write tests and integrate with bazel
