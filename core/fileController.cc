@@ -29,12 +29,14 @@ bool FileController::fileExists(const std::string& filePath) {
 
 void FileController::putFileFragment(const core::FileFragment& fileFragment) {
   try {
-    mutex.lock();
+    std::lock_guard<std::mutex> lockGuard(mutex);
+
+    std::future<std::string*> serializeFileFragmentResult = std::async(std::launch::async, serializeFileFragment, fileFragment);
     boost::uuids::random_generator generator;
     boost::uuids::uuid fileFragmentID = generator();
     std::string fileFragmentIDString = boost::uuids::to_string(fileFragmentID);
-    std::string* fileFragmentBytes = serializeFileFragment(fileFragment);
     FileContainer fileContainer = filesMap.at(fileFragment.filepath());
+    std::string* fileFragmentBytes = serializeFileFragmentResult.get();
     GoString fileFragmentIDGo = {
       fileFragmentIDString.c_str(),
       static_cast<ptrdiff_t>(fileFragmentIDString.size())
@@ -46,16 +48,17 @@ void FileController::putFileFragment(const core::FileFragment& fileFragment) {
 
     int status = putFileFragmentInDB(fileFragmentIDGo, fileFragmentBytesGo);
     if (status != DBStatus::OK) {
-      std::cerr << "Unable to write fileFragment to db" << std::endl;
+      throw "Unable to write fileFragment to db";
+      return;
     }
 
     fileContainer.addFragment(fileFragmentIDString);
     filesMap[fileContainer.getFilePath()] = fileContainer;
     if (fileContainer.isComplete()) {
-      boost::thread fileAssemblyThread(&FileController::assembleFile, this, fileContainer.getFilePath());
-      fileAssemblyThread.join();
+      std::async(std::launch::async, [this, fileContainer](){
+        assembleFile(fileContainer.getFilePath());
+      });
     }
-    mutex.unlock();
   } catch(std::string err) {
     std::cerr << err << std::endl;
   }
@@ -63,12 +66,13 @@ void FileController::putFileFragment(const core::FileFragment& fileFragment) {
 
 
 void FileController::createFileContainer(const core::FileRequestPayload& fileRequestPayload) {
+  std::lock_guard<std::mutex> lockGuard(mutex);
+
   if (!inMap(fileRequestPayload.filepath())) {
     std::string filePath = fileRequestPayload.filepath();
     int totalFragments = fileRequestPayload.totalfragments();
     FileContainer fileContainer(filePath, totalFragments);
 
-    mutex.lock();
     filesMap.insert(
       std::pair<std::string, FileContainer>(
         filePath, 
@@ -76,7 +80,6 @@ void FileController::createFileContainer(const core::FileRequestPayload& fileReq
       )
     );
 
-    mutex.unlock();
     return;
   }
 
@@ -86,12 +89,13 @@ void FileController::createFileContainer(const core::FileRequestPayload& fileReq
 
 void FileController::assembleFile(const std::string& filePath) {
   try {
+    std::lock_guard<std::mutex> lockGuard(mutex);
+
     if (!inMap(filePath)) {
       std::cerr << "Unable to assemble invalid file" << std::endl;
       return;
     }
 
-    mutex.lock();
     FileContainer fileContainer = filesMap.at(filePath);
     std::vector<std::string>::iterator fileFragmentsIterator;
     std::ofstream file(
@@ -100,7 +104,6 @@ void FileController::assembleFile(const std::string& filePath) {
     );
     if (!file.is_open()) {
       std::cerr << "unable to open file" << std::endl;
-      mutex.unlock();
       return;
     }
 
@@ -117,7 +120,6 @@ void FileController::assembleFile(const std::string& filePath) {
       std::tuple<std::string, int> filefragmentReturnTuple = fromFileFragmentReturn(getFileFragmentReturn);
       if (std::get<1>(filefragmentReturnTuple) != DBStatus::OK) {
         std::cerr << "unable to get file fragment" << std::endl;
-        mutex.unlock();
         return;
       }
 
@@ -127,7 +129,6 @@ void FileController::assembleFile(const std::string& filePath) {
 
     file.close();
     filesMap.erase(filePath);
-    mutex.unlock();
   } catch(std::string err) {
     std::cerr << err << std::endl;
   }
@@ -144,12 +145,11 @@ std::tuple<std::string, int> FileController::fromFileFragmentReturn(const getFil
 
 
 bool FileController::inMap(const std::string& filePath) {
-  mutex.lock();
+  std::lock_guard<std::mutex> lockGuard(mutex);
+
   if (filesMap.find(filePath) == filesMap.end()) {
-    mutex.unlock();
     return false;
   }
-  mutex.unlock();
   return true;
 }
 

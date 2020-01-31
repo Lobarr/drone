@@ -36,7 +36,7 @@ func createDBService(dbFileName string) int32 {
 func closeDBService() int32 {
 	mutex.Lock()
 	defer mutex.Unlock()
-	fmt.Println("Closing database")
+	fmt.Fprintln(os.Stdout, "Closing database")
 	err := db.Close()
 	if err != nil {
 		return 1

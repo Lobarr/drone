@@ -46,13 +46,20 @@ http_archive(
         "https://github.com/grpc/grpc/archive/v1.26.0.tar.gz",
     ],
     strip_prefix = "grpc-1.26.0",
-    sha256 = "2fcb7f1ab160d6fd3aaade64520be3e5446fc4c6fa7ba6581afdc4e26094bd81",
+    # sha256 = "2fcb7f1ab160d6fd3aaade64520be3e5446fc4c6fa7ba6581afdc4e26094bd81",
 )
 http_archive(
-    name = "rules_foreign_cc",
-    strip_prefix = "rules_foreign_cc-master",
-    urls = ["https://github.com/bazelbuild/rules_foreign_cc/archive/master.zip"],
+    name = "bazel_skylib",
+    url = "https://github.com/bazelbuild/bazel-skylib/releases/download/1.0.1/bazel-skylib-1.0.1.tar.gz",
+    sha256 = "f1c8360c01fcf276778d3519394805dc2a71a64274a3a0908bc9edff7b5aebc8",
 )
+http_archive(
+    name = "rules_proto_grpc",
+    urls = ["https://github.com/rules-proto-grpc/rules_proto_grpc/archive/1.0.2.tar.gz"],
+    sha256 = "5f0f2fc0199810c65a2de148a52ba0aff14d631d4e8202f41aff6a9d590a471b",
+    strip_prefix = "rules_proto_grpc-1.0.2",
+)
+
 git_repository(
     name = "com_github_nelhage_rules_boost",
     commit = "9f9fb8b2f0213989247c9d5c0e814a8451d18d7f",
@@ -60,25 +67,28 @@ git_repository(
     shallow_since = "1570056263 -0700",
 )
 
+
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies", "go_repository")
 go_repository(
     name = "org_golang_google_grpc",
     build_file_proto_mode = "disable",
     importpath = "google.golang.org/grpc",
-    sum = "h1:J0UbZOIrCAl+fpTOf8YLs4dJo8L/owV4LYVtAXQoPkw=",
-    version = "v1.22.0",
+    urls = [
+        "https://github.com/grpc/grpc-go/archive/v1.27.0.tar.gz"
+    ],
+    strip_prefix = "grpc-go-1.27.0",
 )
 go_repository(
     name = "org_golang_x_net",
     importpath = "golang.org/x/net",
-    sum = "h1:oWX7TPOiFAMXLq8o0ikBYfCJVlRHBcsciT5bXOrH628=",
     version = "v0.0.0-20190311183353-d8887717615a",
+    sum = "h1:oWX7TPOiFAMXLq8o0ikBYfCJVlRHBcsciT5bXOrH628=",
 )
 go_repository(
     name = "org_golang_x_text",
     importpath = "golang.org/x/text",
-    sum = "h1:g61tztE5qeGQ89tm6NTjjM9VPIm088od1l6aSorWRWg=",
     version = "v0.3.0",
+    sum = "h1:g61tztE5qeGQ89tm6NTjjM9VPIm088od1l6aSorWRWg="
 )
 go_repository(
     name = "com_github_syndtr_goleveldb",
@@ -92,22 +102,28 @@ go_repository(
 )
 
 
-load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
-load("@io_bazel_rules_go//go:deps.bzl", "go_rules_dependencies", "go_register_toolchains")
-load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
-load("@rules_foreign_cc//:workspace_definitions.bzl", "rules_foreign_cc_dependencies")
-load("@com_github_nelhage_rules_boost//:boost/boost.bzl", "boost_deps")
+load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 load("@com_github_grpc_grpc//bazel:grpc_deps.bzl", "grpc_deps")
-load("@com_github_grpc_grpc//bazel:grpc_extra_deps.bzl", "grpc_extra_deps")
+load("@com_github_nelhage_rules_boost//:boost/boost.bzl", "boost_deps")
+load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
+load("@io_bazel_rules_go//go:deps.bzl", "go_rules_dependencies", "go_register_toolchains")
+load("@rules_proto_grpc//:repositories.bzl", "rules_proto_grpc_toolchains", "rules_proto_grpc_repos", "bazel_gazelle", "io_bazel_rules_go")
+load("@rules_proto_grpc//cpp:repositories.bzl", rules_proto_grpc_cpp_repos="cpp_repos")
+load("@rules_proto_grpc//go:repositories.bzl", rules_proto_grpc_go_repos="go_repos")
+load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
 
-rules_proto_dependencies()
-rules_proto_toolchains()
-go_rules_dependencies()
-go_register_toolchains()
-gazelle_dependencies()
-protobuf_deps()
-rules_foreign_cc_dependencies()
+bazel_skylib_workspace()
 boost_deps()
+gazelle_dependencies(go_sdk = "go_sdk")
+go_register_toolchains()
+go_rules_dependencies()
 grpc_deps()
-grpc_extra_deps()
-
+io_bazel_rules_go()
+bazel_gazelle()
+protobuf_deps()
+rules_proto_dependencies()
+rules_proto_grpc_cpp_repos()
+rules_proto_grpc_go_repos()
+rules_proto_grpc_repos()
+rules_proto_grpc_toolchains()
+rules_proto_toolchains()
