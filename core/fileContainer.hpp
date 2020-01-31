@@ -3,12 +3,11 @@
 
 #include <vector>
 #include "core/drone.pb.h"
-#include "services/db/drone_db_service.h"
 
 
 class FileContainer {
   public:
-    FileContainer(const std::string& filePath, const int& totalFragments);
+    FileContainer(std::string& filePath, int& totalFragments);
     ~FileContainer();
     void addFragment(const std::string& fragmentKey);
     std::vector<std::string> getFragments() const;

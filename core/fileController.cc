@@ -22,67 +22,119 @@ FileController::~FileController() {
 }
 
 
-bool FileController::fileExists(const std::string& fileName) {
-  std::ifstream f(fileName);
+bool FileController::fileExists(const std::string& filePath) {
+  std::ifstream f(filePath);
   return f.good();
 }
 
-void FileController::putFileFragment(const std::string& fileName, const core::FileFragment& filefragment) {
-  boost::uuids::random_generator generator;
-  boost::uuids::uuid fileFragmentID = generator();
-  std::stringstream fileFragmentIDStringStream;
-  // fileFragmentIDStringStream << fileFragmentID;
-  // std::
-}
 
-void FileController::putFileFragment(const std::string& fileName, const core::FileRequestPayload& fileRequestPayload) {
-  if (!inMap(fileName)) {
-    filesMap.insert(std::pair<std::string, FileContainer>(fileName, FileContainer(fileName, fileRequestPayload.totalfragments())));
-  } else {
-    std::cout << "File already being received" << std::endl;
+void FileController::putFileFragment(const core::FileFragment& filefragment) {
+  try {
+    mutex.lock();
+    boost::uuids::random_generator generator;
+    boost::uuids::uuid fileFragmentID = generator();
+    std::string fileFragmentIDString = boost::lexical_cast<std::string>(fileFragmentID);
+    std::string* fileFragmentBytes = serializeFileFragment(filefragment);
+    FileContainer fileContainer = filesMap.at(filefragment.filepath());
+    GoString fileFragmentIDGo = {
+      fileFragmentIDString.c_str(),
+      static_cast<ptrdiff_t>(fileFragmentIDString.size())
+    };
+    GoString fileFragmentBytesGo = {
+      fileFragmentBytes->c_str(),
+      static_cast<ptrdiff_t>(fileFragmentBytes->size())
+    };
+
+    int status = putFileFragmentInDB(fileFragmentIDGo, fileFragmentBytesGo);
+    if (status != DBStatus::OK) {
+      std::cerr << "Unable to write fileFragment to db" << std::endl;
+    }
+
+    fileContainer.addFragment(fileFragmentIDString);
+    filesMap[fileContainer.getFilePath()] = fileContainer;
+    if (fileContainer.isComplete()) {
+      std::thread fileAssemblyThread(&assembleFile, fileContainer.getFilePath());
+      fileAssemblyThread.join();
+    }
+    mutex.unlock();
+  } catch(std::string err) {
+    std::cerr << err << std::endl;
   }
 }
 
 
-void FileController::assembleFile(const std::string& fileName) {
-  if (!inMap(fileName)) {
-    std::cerr << "Unable to assemble invalid file" << std::endl;
+void FileController::createFileContainer(const core::FileRequestPayload& fileRequestPayload) {
+  if (!inMap(fileRequestPayload.filepath())) {
+    std::string filePath = fileRequestPayload.filepath();
+    int totalFragments = fileRequestPayload.totalfragments();
+    FileContainer fileContainer(filePath, totalFragments);
+
+    mutex.lock();
+    filesMap.insert(
+      std::pair<std::string, FileContainer>(
+        fileRequestPayload.filepath(), 
+        fileContainer
+      )
+    );
+
+    mutex.unlock();
     return;
   }
 
-  FileContainer fileContainer = filesMap.at(fileName);
-  std::vector<std::string>::iterator fileFragmentsIterator;
-  std::ofstream file(
-    fileContainer.getFileName(),
-    std::ios::out | std::ios::binary
-  );
-  if (!file.is_open()) {
-    std::cerr << "unable to open file" << std::endl;
-    return;
-  }
+  std::cout << "File already being received" << std::endl;
+}
 
-  for (
-    fileFragmentsIterator = fileContainer.getFragments().begin();
-    fileFragmentsIterator != fileContainer.getFragments().end();
-    fileFragmentsIterator++
-  ) {
-    GoString fileFramentIDGo = {(*fileFragmentsIterator).c_str(), static_cast<ptrdiff_t>((*fileFragmentsIterator).size())};
-    getFileFragment_return getFileFragmentReturn = getFileFragment(fileFramentIDGo);
-    std::tuple<std::string, int> filefragmentReturnTuple = fromFileFragmentReturn(getFileFragmentReturn);
-    if (std::get<1>(filefragmentReturnTuple) != DBStatus::OK) {
-      std::cerr << "unable to get file fragment" << std::endl;
+
+void FileController::assembleFile(const std::string& filePath) {
+  try {
+    if (!inMap(filePath)) {
+      std::cerr << "Unable to assemble invalid file" << std::endl;
       return;
     }
 
-    core::FileFragment* fileFragment = deserializeFileFragment(std::get<0>(filefragmentReturnTuple));
-    file << fileFragment->fragmentcontent();
-  }
+    mutex.lock();
+    FileContainer fileContainer = filesMap.at(filePath);
+    std::vector<std::string>::iterator fileFragmentsIterator;
+    std::ofstream file(
+      fileContainer.getFilePath(),
+      std::ios::out | std::ios::binary
+    );
+    if (!file.is_open()) {
+      std::cerr << "unable to open file" << std::endl;
+      mutex.unlock();
+      return;
+    }
 
-  file.close();
+    for (
+      fileFragmentsIterator = fileContainer.getFragments().begin();
+      fileFragmentsIterator != fileContainer.getFragments().end();
+      fileFragmentsIterator++
+    ) {
+      GoString fileFramentIDGo = {
+        (*fileFragmentsIterator).c_str(),
+        static_cast<ptrdiff_t>((*fileFragmentsIterator).size())
+      };
+      getFileFragmentFromDB_return getFileFragmentReturn = getFileFragmentFromDB(fileFramentIDGo);
+      std::tuple<std::string, int> filefragmentReturnTuple = fromFileFragmentReturn(getFileFragmentReturn);
+      if (std::get<1>(filefragmentReturnTuple) != DBStatus::OK) {
+        std::cerr << "unable to get file fragment" << std::endl;
+        mutex.unlock();
+        return;
+      }
+
+      core::FileFragment* fileFragment = deserializeFileFragment(std::get<0>(filefragmentReturnTuple));
+      file << fileFragment->fragmentcontent();
+    }
+
+    file.close();
+    mutex.unlock();
+  } catch(std::string err) {
+    std::cerr << err << std::endl;
+  }
 }
 
 
-std::tuple<std::string, int> FileController::fromFileFragmentReturn(const getFileFragment_return& getFileFragmentReturn) const {
+std::tuple<std::string, int> FileController::fromFileFragmentReturn(const getFileFragmentFromDB_return& getFileFragmentReturn) const {
   std::tuple<std::string, int> fileFragmentReturnTuple;
   std::string fileFragmentBytes = static_cast<std::string>(getFileFragmentReturn.r0.p);
   int status = getFileFragmentReturn.r1;
@@ -90,10 +142,14 @@ std::tuple<std::string, int> FileController::fromFileFragmentReturn(const getFil
   return fileFragmentReturnTuple;
 }
 
-bool FileController::inMap(const std::string& fileName) {
-  if (filesMap.find(fileName) == filesMap.end()) {
+
+bool FileController::inMap(const std::string& filePath) {
+  mutex.lock();
+  if (filesMap.find(filePath) == filesMap.end()) {
+    mutex.unlock();
     return false;
   }
+  mutex.unlock();
   return true;
 }
 

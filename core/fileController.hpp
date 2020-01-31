@@ -1,17 +1,19 @@
 #ifndef FILE_CONTROLLER_HPP
 #define FILE_CONTROLLER_HPP
 
-#include <string>
-#include <iostream>
 #include <fstream>
-#include <sstream>
+#include <iostream>
 #include <map>
-#include "core/drone.pb.h"
-#include  "boost/uuid/uuid_generators.hpp"
+#include <mutex>
+#include <thread>
+#include <string>
+#include "boost/lexical_cast.hpp"
+#include "boost/uuid/uuid_generators.hpp"
 #include "boost/uuid/uuid.hpp"
-#include "services/db/drone_db_service.h"
+#include "core/drone.pb.h"
 #include "fileContainer.hpp"
 #include "serializeUtil.hpp"
+#include "services/db/drone_db_service.h"
 
 
 enum DBStatus {
@@ -24,13 +26,14 @@ class FileController {
     FileController(const std::string& dbfilePath);
     ~FileController();
     bool fileExists(const std::string& filePath);
-    void putFileFragment(const std::string& filePath, const core::FileFragment& fileFragment);
-    void putFileFragment(const std::string& filePath, const core::FileRequestPayload& fileRequestPayload);
+    void putFileFragment(const core::FileFragment& fileFragment);
+    void createFileContainer(const core::FileRequestPayload& fileRequestPayload);
     void assembleFile(const std::string& filePath);
     bool inMap(const std::string& filePath);
-    std::tuple<std::string, int> fromFileFragmentReturn(const getFileFragment_return& getFileFragmentReturn) const;
+    std::tuple<std::string, int> fromFileFragmentReturn(const getFileFragmentFromDB_return& getFileFragmentReturn) const;
   private:
     std::map<std::string, FileContainer> filesMap; // filePath -> fileContainer
+    std::mutex mutex;
 };
 
 #endif

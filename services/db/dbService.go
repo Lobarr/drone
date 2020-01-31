@@ -45,9 +45,9 @@ func closeDBService() int32 {
 	return 0
 }
 
-// putFileFragment writes file fragment to db
-//export putFileFragment
-func putFileFragment(fragmentID string, fileFragment string) int32 {
+// putFileFragmentInDB writes file fragment to db
+//export putFileFragmentInDB
+func putFileFragmentInDB(fragmentID string, fileFragment string) int32 {
 	mutex.Lock()
 	defer mutex.Unlock()
 	err := db.Put([]byte(fragmentID), []byte(fileFragment), nil)
@@ -57,9 +57,9 @@ func putFileFragment(fragmentID string, fileFragment string) int32 {
 	return 0
 }
 
-// getFileFragment gets file fragment from db
-//export getFileFragment
-func getFileFragment(fragmentID string) (string, int32) {
+// getFileFragmentFromDB gets file fragment from db
+//export getFileFragmentFromDB
+func getFileFragmentFromDB(fragmentID string) (string, int32) {
 	mutex.Lock()
 	defer mutex.Unlock()
 	data, err := db.Get([]byte(fragmentID), nil)
@@ -69,9 +69,9 @@ func getFileFragment(fragmentID string) (string, int32) {
 	return string(data), 0
 }
 
-// removeFileFragments removes file fragments from db
-//export removeFileFragments
-func removeFileFragments(fileFragmentIDs []string) int32 {
+// removeFileFragmentsFromDB removes file fragments from db
+//export removeFileFragmentsFromDB
+func removeFileFragmentsFromDB(fileFragmentIDs []string) int32 {
 	
 	batch := new(leveldb.Batch)
 	for _, fileFragmentID := range fileFragmentIDs {
