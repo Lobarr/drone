@@ -16,11 +16,13 @@ message FileFragment {
   string filePath = 1;
   int32 fragmentId = 2;
   bytes fragmentContent = 3;
+  int32 totalFragments = 4;
 }
 
 message FileRequestPayload {
-  string filePath = 1;
   int32 totalFragments = 2;
+  string filePath = 1;
+  string recipient = 3;
 }
 
 message FileRequest {

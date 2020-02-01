@@ -2,6 +2,8 @@
 
 
 FileController::FileController(const std::string& dbFileName) {
+  std::cout << "[FileController] Initalizing fileController" << std::endl;
+
   GoString dbFileNameGo = { 
     dbFileName.c_str(), 
     static_cast<ptrdiff_t>(dbFileName.size()) 
@@ -14,9 +16,11 @@ FileController::FileController(const std::string& dbFileName) {
 
 
 FileController::~FileController() {
+  std::cout << "[FileController] Cleaning up fileController" << std::endl;
+
   GoUint8 status = closeDBService();
   if (status != DBStatus::OK) {
-    std::cerr << "Unable to close db service" << std::endl;
+    std::cerr << "[FileController] Unable to close db service" << std::endl;
   }
 }
 
@@ -28,49 +32,51 @@ bool FileController::fileExists(const std::string& filePath) {
 
 
 void FileController::putFileFragment(const core::FileFragment& fileFragment) {
-  try {
-    std::lock_guard<std::mutex> lockGuard(mutex);
+  std::cout << "[FileController] Putting fileFragment " << fileFragment.fragmentid() << " of file " << fileFragment.filepath() << std::endl;
 
-    std::future<std::string*> serializeFileFragmentResult = std::async(std::launch::async, serializeFileFragment, fileFragment);
-    boost::uuids::random_generator generator;
-    boost::uuids::uuid fileFragmentID = generator();
-    std::string fileFragmentIDString = boost::uuids::to_string(fileFragmentID);
-    FileContainer fileContainer = filesMap.at(fileFragment.filepath());
-    std::string* fileFragmentBytes = serializeFileFragmentResult.get();
-    GoString fileFragmentIDGo = {
-      fileFragmentIDString.c_str(),
-      static_cast<ptrdiff_t>(fileFragmentIDString.size())
-    };
-    GoString fileFragmentBytesGo = {
-      fileFragmentBytes->c_str(),
-      static_cast<ptrdiff_t>(fileFragmentBytes->size())
-    };
+  // std::lock_guard<std::mutex> lockGuard(mutex);
 
-    int status = putFileFragmentInDB(fileFragmentIDGo, fileFragmentBytesGo);
-    if (status != DBStatus::OK) {
-      throw "Unable to write fileFragment to db";
-      return;
-    }
+  if (!inMap(fileFragment.filepath())) createFileContainer(fileFragment);
 
-    fileContainer.addFragment(fileFragmentIDString);
-    filesMap[fileContainer.getFilePath()] = fileContainer;
-    if (fileContainer.isComplete()) {
-      std::async(std::launch::async, [this, fileContainer](){
-        assembleFile(fileContainer.getFilePath());
-      });
-    }
-  } catch(std::string err) {
-    std::cerr << err << std::endl;
+  std::future<std::string*> serializeFileFragmentResult = std::async(std::launch::async, serializeFileFragment, fileFragment);
+  boost::uuids::random_generator generator;
+  boost::uuids::uuid fileFragmentID = generator();
+  std::string fileFragmentIDString = boost::uuids::to_string(fileFragmentID);
+  std::cout << "here" << std::endl;
+  FileContainer fileContainer = filesMap.at(fileFragment.filepath());
+  std::string* fileFragmentBytes = serializeFileFragmentResult.get();
+  GoString fileFragmentIDGo = {
+    fileFragmentIDString.c_str(),
+    static_cast<ptrdiff_t>(fileFragmentIDString.size())
+  };
+  GoString fileFragmentBytesGo = {
+    fileFragmentBytes->c_str(),
+    static_cast<ptrdiff_t>(fileFragmentBytes->size())
+  };
+
+  int status = putFileFragmentInDB(fileFragmentIDGo, fileFragmentBytesGo);
+  if (status != DBStatus::OK) {
+    std::cerr << "[FileController] Unable to write fileFragment to db" << std::endl;
+    return;
+  }
+
+  fileContainer.addFragment(fileFragmentIDString);
+  filesMap[fileContainer.getFilePath()] = fileContainer;
+  if (fileContainer.isComplete()) {
+    std::async(std::launch::async, [this, fileContainer](){
+      assembleFile(fileContainer.getFilePath());
+    });
   }
 }
 
 
-void FileController::createFileContainer(const core::FileRequestPayload& fileRequestPayload) {
+void FileController::createFileContainer(const core::FileFragment& fileFragment) {
+  std::cout << "[FileController] Initalizing receipt of " << fileFragment.filepath() << std::endl;
   std::lock_guard<std::mutex> lockGuard(mutex);
 
-  if (!inMap(fileRequestPayload.filepath())) {
-    std::string filePath = fileRequestPayload.filepath();
-    int totalFragments = fileRequestPayload.totalfragments();
+  if (!inMap(fileFragment.filepath())) {
+    std::string filePath = fileFragment.filepath();
+    int totalFragments = fileFragment.totalfragments();
     FileContainer fileContainer(filePath, totalFragments);
 
     filesMap.insert(
@@ -83,7 +89,7 @@ void FileController::createFileContainer(const core::FileRequestPayload& fileReq
     return;
   }
 
-  std::cerr << "File already being received" << std::endl;
+  std::cerr << "[FileController] File already being received" << std::endl;
 }
 
 
@@ -92,7 +98,7 @@ void FileController::assembleFile(const std::string& filePath) {
     std::lock_guard<std::mutex> lockGuard(mutex);
 
     if (!inMap(filePath)) {
-      std::cerr << "Unable to assemble invalid file" << std::endl;
+      std::cerr << "[FileController] Unable to assemble invalid file" << std::endl;
       return;
     }
 
@@ -103,7 +109,7 @@ void FileController::assembleFile(const std::string& filePath) {
       std::ios::out | std::ios::binary
     );
     if (!file.is_open()) {
-      std::cerr << "unable to open file" << std::endl;
+      std::cerr << "[FileController] Unable to open file" << std::endl;
       return;
     }
 
@@ -119,7 +125,7 @@ void FileController::assembleFile(const std::string& filePath) {
       getFileFragmentFromDB_return getFileFragmentReturn = getFileFragmentFromDB(fileFramentIDGo);
       std::tuple<std::string, int> filefragmentReturnTuple = fromFileFragmentReturn(getFileFragmentReturn);
       if (std::get<1>(filefragmentReturnTuple) != DBStatus::OK) {
-        std::cerr << "unable to get file fragment" << std::endl;
+        std::cerr << "[FileController] Unable to get file fragment" << std::endl;
         return;
       }
 
@@ -153,3 +159,6 @@ bool FileController::inMap(const std::string& filePath) {
   return true;
 }
 
+void FileController::handleFileRequest(const core::FileRequestPayload& fileRequestPayload) {
+  std::cout << "[FileController] Handling file request" << std::endl;
+}

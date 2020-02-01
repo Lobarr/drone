@@ -16,7 +16,6 @@ var (
 //CreateDBService initializes db and mutex
 //export createDBService
 func createDBService(dbFileName string) int32 {
-	fmt.Fprintln(os.Stdout, dbFileName)
 	if db != nil {
 		fmt.Fprintln(os.Stdout, "DBService has already been created")
 	}
@@ -72,7 +71,7 @@ func getFileFragmentFromDB(fragmentID string) (string, int32) {
 // removeFileFragmentsFromDB removes file fragments from db
 //export removeFileFragmentsFromDB
 func removeFileFragmentsFromDB(fileFragmentIDs []string) int32 {
-	
+
 	batch := new(leveldb.Batch)
 	for _, fileFragmentID := range fileFragmentIDs {
 		batch.Delete([]byte(fileFragmentID))

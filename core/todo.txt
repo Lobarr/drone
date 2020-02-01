@@ -4,8 +4,10 @@
   - [*from*][*log_type*] *log_body*
     e.g [FileController][Error] Unable to create database
 
-- Merge services folder to core
-
-- Implement asnyc server
-
 - Write tests and integrate with bazel
+
+- Cleanup orphaned file fragments on occasion
+
+- Implement cli
+
+- write docs

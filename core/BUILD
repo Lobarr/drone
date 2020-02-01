@@ -2,6 +2,7 @@ load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("@rules_proto_grpc//go:defs.bzl", "go_grpc_library")
 load("@rules_proto_grpc//cpp:defs.bzl", "cpp_grpc_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 
 proto_library(
@@ -29,10 +30,11 @@ go_grpc_library(
 cc_library(
     name = "drone_daemon_library",
     srcs = [
-        "main.cc",
         "fileController.cc",
         "fileContainer.cc",
         "serializeUtil.cc",
+        "droneService.hpp",
+        "main.cc",
     ],
     hdrs = [
         "fileController.hpp",
@@ -44,7 +46,7 @@ cc_library(
         ":drone_proto_cc",
         "@boost//:uuid",
         "@boost//:thread",
-        "//services/db:drone_db_service.cc",
+        ":drone_db_service.cc",
     ],
     visibility = ["//visibility:public"],
 )
@@ -54,4 +56,20 @@ cc_binary(
     deps = [
         ":drone_daemon_library",
     ],
+)
+
+go_binary(
+    name = "drone_db_service",
+    embed = [":drone_db_service_library"],
+    linkmode = "c-archive",
+    visibility = ["//visibility:public"],
+)
+
+go_library(
+    name = "drone_db_service_library",
+    srcs = ["dbService.go"],
+    cgo = True,
+    importpath = "github.com/Lobarr/drone/core/",
+    visibility = ["//visibility:public"],
+    deps = ["@com_github_syndtr_goleveldb//leveldb:go_default_library"],
 )

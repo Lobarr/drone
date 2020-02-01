@@ -1,8 +1,8 @@
 #ifndef FILE_CONTAINER_HPP
 #define FILE_CONTAINER_HPP
 
-#include <vector>
 #include "core/drone.pb.h"
+#include <vector>
 
 
 class FileContainer {
