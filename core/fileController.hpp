@@ -5,7 +5,6 @@
 #include "core/drone.pb.h"
 #include "fileContainer.hpp"
 #include "serializeUtil.hpp"
-#include <boost/log/trivial.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -37,7 +36,7 @@ class FileController {
     std::tuple<std::string, int> fromFileFragmentReturn(const getFileFragmentFromDB_return& getFileFragmentReturn) const;
   private:
     std::map<std::string, FileContainer> filesMap; // filePath -> fileContainer
-    std::mutex mutex;
+    std::mutex mutex; 
 };
 
 #endif

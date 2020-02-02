@@ -45,12 +45,12 @@ cc_library(
     deps = [
         ":drone_proto_cc",
         ":drone_db_service.cc",
-        "@com_google_protobuf//:protobuf",
+        "@com_google_protobuf//:protobuf_lite",
         "@boost//:uuid",
         "@boost//:thread",
         "@boost//:filesystem",
     ],
-    visibility = ["//visibility:public"],
+    visibility = ["//visibility:__pkg__"],
 )
 
 cc_binary(
@@ -64,7 +64,7 @@ go_binary(
     name = "drone_db_service",
     embed = [":drone_db_service_library"],
     linkmode = "c-archive",
-    visibility = ["//visibility:public"],
+    visibility = ["//visibility:__pkg__"],
 )
 
 go_library(
@@ -72,6 +72,6 @@ go_library(
     srcs = ["dbService.go"],
     cgo = True,
     importpath = "github.com/Lobarr/drone/core/",
-    visibility = ["//visibility:public"],
     deps = ["@com_github_syndtr_goleveldb//leveldb:go_default_library"],
+    visibility = ["//visibility:__pkg__"],
 )

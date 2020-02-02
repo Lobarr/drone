@@ -23,6 +23,7 @@ FileController::~FileController() {
   if (status != DBStatus::OK) {
     std::cerr << "[FileController] Unable to close db service" << std::endl;
   }
+  exit(1);
 }
 
 

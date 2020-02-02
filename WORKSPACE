@@ -46,7 +46,7 @@ http_archive(
         "https://github.com/grpc/grpc/archive/v1.26.0.tar.gz",
     ],
     strip_prefix = "grpc-1.26.0",
-    # sha256 = "2fcb7f1ab160d6fd3aaade64520be3e5446fc4c6fa7ba6581afdc4e26094bd81",
+    sha256 = "2fcb7f1ab160d6fd3aaade64520be3e5446fc4c6fa7ba6581afdc4e26094bd81",
 )
 http_archive(
     name = "bazel_skylib",

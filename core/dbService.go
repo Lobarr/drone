@@ -46,7 +46,7 @@ func closeDBService() int32 {
 // putFileFragmentInDB writes file fragment to db
 //export putFileFragmentInDB
 func putFileFragmentInDB(fragmentID string, fileFragment string) int32 {
-	fmt.Fprintln(os.Stdout, "puttinf fileFragment in db")
+	fmt.Fprintln(os.Stdout, "putting fileFragment in db")
 	mutex.Lock()
 	defer mutex.Unlock()
 	err := db.Put([]byte(fragmentID), []byte(fileFragment), nil)
