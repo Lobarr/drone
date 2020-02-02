@@ -1,0 +1,26 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build Drone (Debug)",
+      "type": "shell",
+      "command": "bazel",
+      "args": [
+        "build",
+        "--jobs=2",
+        "--compilation_mode=dbg",
+        "--strip=\"never\"",
+        "core:drone_daemon",
+      ],
+    },
+    {
+      "label": "Build Drone (Release)",
+      "type": "shell",
+      "command": "bazel",
+      "args": [
+        "build",
+        "core:drone_daemon",
+      ],
+    },
+  ]
+}

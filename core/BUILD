@@ -44,9 +44,11 @@ cc_library(
     ],
     deps = [
         ":drone_proto_cc",
+        ":drone_db_service.cc",
+        "@com_google_protobuf//:protobuf",
         "@boost//:uuid",
         "@boost//:thread",
-        ":drone_db_service.cc",
+        "@boost//:filesystem",
     ],
     visibility = ["//visibility:public"],
 )

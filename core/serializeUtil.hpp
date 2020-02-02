@@ -1,9 +1,10 @@
 #ifndef SERIALIZE_UTIL_HPP
 #define SERIALIZE_UTIL_HPP
 
+#include "google/protobuf/message.h"
 #include "core/drone.pb.h"
 
-std::string* serializeFileFragment(const core::FileFragment& fileFragment);
-core::FileFragment* deserializeFileFragment(std::string& fileFragmentBytes);
+void serializeFileFragment(const core::FileFragment& fileFragment, std::string* fileFragmentBytes);
+void deserializeFileFragment(std::string& fileFragmentBytes, core::FileFragment* fileFragment);
 
 #endif

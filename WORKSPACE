@@ -30,9 +30,9 @@ http_archive(
 )
 git_repository(
     name = "com_google_protobuf",
-    commit = "09745575a923640154bcf307fba8aedff47f240a",
+    commit = "4cf5bfee9546101d98754d23ff378ff718ba8438",
     remote = "https://github.com/protocolbuffers/protobuf",
-    shallow_since = "1558721209 -0700",
+    shallow_since = "1580418511 -0800"
 )
 git_repository(
     name = "rules_cc",

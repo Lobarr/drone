@@ -17,9 +17,7 @@ void startServer(FileController& fileController) {
 }
 
 int main(){
-  std::string dbName = DRONE_DB_PATH;
-  std::string filePath = "someFilePath";
-  FileController fileController(filePath);
+  FileController fileController(DRONE_DB_PATH.string());
   startServer(fileController);
   return 0;
 }

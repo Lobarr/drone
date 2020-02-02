@@ -11,6 +11,7 @@ FileController::FileController(const std::string& dbFileName) {
   GoInt32 status = createDBService(dbFileNameGo);
   if (status != DBStatus::OK) {
     std::cerr << "Unable to create db service" << std::endl;
+    exit(1);
   }
 }
 
@@ -34,17 +35,21 @@ bool FileController::fileExists(const std::string& filePath) {
 void FileController::putFileFragment(const core::FileFragment& fileFragment) {
   std::cout << "[FileController] Putting fileFragment " << fileFragment.fragmentid() << " of file " << fileFragment.filepath() << std::endl;
 
-  // std::lock_guard<std::mutex> lockGuard(mutex);
+  std::lock_guard<std::mutex> lockGuard(mutex);
 
-  if (!inMap(fileFragment.filepath())) createFileContainer(fileFragment);
+  if (inMap(fileFragment.filepath()) == false) {
+    createFileContainer(fileFragment);
+  }
 
-  std::future<std::string*> serializeFileFragmentResult = std::async(std::launch::async, serializeFileFragment, fileFragment);
+  std::string* fileFragmentBytes = NULL;
+  std::future<void> serializeFileFragmentAsync = std::async(std::launch::async, serializeFileFragment, fileFragment, fileFragmentBytes);
   boost::uuids::random_generator generator;
   boost::uuids::uuid fileFragmentID = generator();
   std::string fileFragmentIDString = boost::uuids::to_string(fileFragmentID);
-  std::cout << "here" << std::endl;
+  serializeFileFragmentAsync.get();
   FileContainer fileContainer = filesMap.at(fileFragment.filepath());
-  std::string* fileFragmentBytes = serializeFileFragmentResult.get();
+  serializeFileFragmentAsync.get();
+  
   GoString fileFragmentIDGo = {
     fileFragmentIDString.c_str(),
     static_cast<ptrdiff_t>(fileFragmentIDString.size())
@@ -72,24 +77,19 @@ void FileController::putFileFragment(const core::FileFragment& fileFragment) {
 
 void FileController::createFileContainer(const core::FileFragment& fileFragment) {
   std::cout << "[FileController] Initalizing receipt of " << fileFragment.filepath() << std::endl;
-  std::lock_guard<std::mutex> lockGuard(mutex);
 
-  if (!inMap(fileFragment.filepath())) {
-    std::string filePath = fileFragment.filepath();
-    int totalFragments = fileFragment.totalfragments();
-    FileContainer fileContainer(filePath, totalFragments);
+  std::string filePath = fileFragment.filepath();
+  int totalFragments = fileFragment.totalfragments();
+  FileContainer fileContainer(filePath, totalFragments);
 
-    filesMap.insert(
-      std::pair<std::string, FileContainer>(
-        filePath, 
-        fileContainer
-      )
-    );
+  filesMap.insert(
+    std::pair<std::string, FileContainer>(
+      filePath, 
+      fileContainer
+    )
+  );
 
-    return;
-  }
-
-  std::cerr << "[FileController] File already being received" << std::endl;
+  return;
 }
 
 
@@ -129,7 +129,8 @@ void FileController::assembleFile(const std::string& filePath) {
         return;
       }
 
-      core::FileFragment* fileFragment = deserializeFileFragment(std::get<0>(filefragmentReturnTuple));
+      core::FileFragment* fileFragment = NULL;
+      deserializeFileFragment(std::get<0>(filefragmentReturnTuple), fileFragment);
       file << fileFragment->fragmentcontent();
     }
 
@@ -151,8 +152,6 @@ std::tuple<std::string, int> FileController::fromFileFragmentReturn(const getFil
 
 
 bool FileController::inMap(const std::string& filePath) {
-  std::lock_guard<std::mutex> lockGuard(mutex);
-
   if (filesMap.find(filePath) == filesMap.end()) {
     return false;
   }
