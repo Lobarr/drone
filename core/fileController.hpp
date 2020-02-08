@@ -3,6 +3,7 @@
 
 #include "core/drone_db_service.h"
 #include "core/drone.pb.h"
+#include "core/dbService.hpp"
 #include "fileContainer.hpp"
 #include "serializeUtil.hpp"
 #include <boost/thread/thread.hpp>
@@ -25,7 +26,7 @@ enum DBStatus {
 
 class FileController {
   public:
-    FileController(const std::string& dbfilePath);
+    FileController(const std::string& dbFileName);
     ~FileController();
     bool fileExists(const std::string& filePath);
     void putFileFragment(const core::FileFragment& fileFragment);
@@ -33,10 +34,10 @@ class FileController {
     void assembleFile(const std::string& filePath);
     bool inMap(const std::string& filePath);
     void handleFileRequest(const core::FileRequestPayload& fileRequestPayload);
-    std::tuple<std::string, int> fromFileFragmentReturn(const getFileFragmentFromDB_return& getFileFragmentReturn) const;
   private:
     std::map<std::string, FileContainer> filesMap; // filePath -> fileContainer
     std::mutex mutex; 
+    DBService dbService;
 };
 
 #endif

@@ -4,7 +4,7 @@
 #include "google/protobuf/message.h"
 #include "core/drone.pb.h"
 
-void serializeFileFragment(const core::FileFragment& fileFragment, std::string* fileFragmentBytes);
-void deserializeFileFragment(std::string& fileFragmentBytes, core::FileFragment* fileFragment);
+std::string serializeFileFragment(const core::FileFragment& fileFragment);
+core::FileFragment deserializeFileFragment(std::string& fileFragmentBytes);
 
 #endif

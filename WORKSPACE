@@ -1,7 +1,9 @@
 workspace(name = "drone")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository", "new_git_repository")
+
+all_content = """filegroup(name = "all", srcs = glob(["**"]), visibility = ["//visibility:public"])"""
 
 http_archive(
     name = "rules_proto",
@@ -12,6 +14,13 @@ http_archive(
         "https://github.com/bazelbuild/rules_proto/archive/97d8af4dc474595af3900dd85cb3a29ad28cc313.tar.gz",
     ],
 )
+
+http_archive(
+    name = "rules_foreign_cc",
+    strip_prefix = "rules_foreign_cc-master",
+    url = "https://github.com/bazelbuild/rules_foreign_cc/archive/master.zip",
+)
+
 http_archive(
     name = "io_bazel_rules_go",
     urls = [
@@ -20,6 +29,7 @@ http_archive(
     ],
     sha256 = "b27e55d2dcc9e6020e17614ae6e0374818a3e3ce6f2024036e688ada24110444",
 )
+
 http_archive(
     name = "bazel_gazelle",
     urls = [
@@ -28,18 +38,29 @@ http_archive(
     ],
     sha256 = "86c6d481b3f7aedc1d60c1c211c6f76da282ae197c3b3160f54bd3a8f847896f",
 )
+
 git_repository(
     name = "com_google_protobuf",
     commit = "4cf5bfee9546101d98754d23ff378ff718ba8438",
     remote = "https://github.com/protocolbuffers/protobuf",
     shallow_since = "1580418511 -0800"
 )
+
+new_git_repository(
+    name = "com_google_leveldb",
+    commit = "78b39d68c15ba020c0d60a3906fb66dbf1697595",
+    remote = "https://github.com/google/leveldb",
+    build_file_content = all_content,
+    init_submodules = True,
+)
+
 git_repository(
     name = "rules_cc",
     remote = "https://github.com/bazelbuild/rules_cc/",
     commit = "8774a4decd63f45a636f40a75700c06b7ea9d30a",
     shallow_since = "1579787417 -0800"
 )
+
 http_archive(
     name = "com_github_grpc_grpc",
     urls = [
@@ -48,11 +69,13 @@ http_archive(
     strip_prefix = "grpc-1.26.0",
     sha256 = "2fcb7f1ab160d6fd3aaade64520be3e5446fc4c6fa7ba6581afdc4e26094bd81",
 )
+
 http_archive(
     name = "bazel_skylib",
     url = "https://github.com/bazelbuild/bazel-skylib/releases/download/1.0.1/bazel-skylib-1.0.1.tar.gz",
     sha256 = "f1c8360c01fcf276778d3519394805dc2a71a64274a3a0908bc9edff7b5aebc8",
 )
+
 http_archive(
     name = "rules_proto_grpc",
     urls = ["https://github.com/rules-proto-grpc/rules_proto_grpc/archive/1.0.2.tar.gz"],
@@ -67,7 +90,6 @@ git_repository(
     shallow_since = "1570056263 -0700",
 )
 
-
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies", "go_repository")
 go_repository(
     name = "org_golang_google_grpc",
@@ -78,23 +100,27 @@ go_repository(
     ],
     strip_prefix = "grpc-go-1.27.0",
 )
+
 go_repository(
     name = "org_golang_x_net",
     importpath = "golang.org/x/net",
     version = "v0.0.0-20190311183353-d8887717615a",
     sum = "h1:oWX7TPOiFAMXLq8o0ikBYfCJVlRHBcsciT5bXOrH628=",
 )
+
 go_repository(
     name = "org_golang_x_text",
     importpath = "golang.org/x/text",
     version = "v0.3.0",
     sum = "h1:g61tztE5qeGQ89tm6NTjjM9VPIm088od1l6aSorWRWg="
 )
+
 go_repository(
     name = "com_github_syndtr_goleveldb",
     importpath = "github.com/syndtr/goleveldb",
     commit = "758128399b1df3a87e92df6c26c1d2063da8fabe"
 )
+
 go_repository(
     name = "com_github_golang_snappy",
     importpath = "github.com/golang/snappy",
@@ -111,6 +137,7 @@ load("@rules_proto_grpc//:repositories.bzl", "rules_proto_grpc_toolchains", "rul
 load("@rules_proto_grpc//cpp:repositories.bzl", rules_proto_grpc_cpp_repos="cpp_repos")
 load("@rules_proto_grpc//go:repositories.bzl", rules_proto_grpc_go_repos="go_repos")
 load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
+load("@rules_foreign_cc//:workspace_definitions.bzl", "rules_foreign_cc_dependencies")
 
 bazel_skylib_workspace()
 boost_deps()
@@ -127,3 +154,4 @@ rules_proto_grpc_go_repos()
 rules_proto_grpc_repos()
 rules_proto_grpc_toolchains()
 rules_proto_toolchains()
+rules_foreign_cc_dependencies()

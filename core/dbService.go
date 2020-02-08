@@ -3,9 +3,10 @@ package main
 import (
 	"C"
 	"fmt"
-	"github.com/syndtr/goleveldb/leveldb"
 	"os"
 	"sync"
+
+	"github.com/syndtr/goleveldb/leveldb"
 )
 
 var (
@@ -46,7 +47,6 @@ func closeDBService() int32 {
 // putFileFragmentInDB writes file fragment to db
 //export putFileFragmentInDB
 func putFileFragmentInDB(fragmentID string, fileFragment string) int32 {
-	fmt.Fprintln(os.Stdout, "putting fileFragment in db")
 	mutex.Lock()
 	defer mutex.Unlock()
 	err := db.Put([]byte(fragmentID), []byte(fileFragment), nil)
@@ -61,6 +61,7 @@ func putFileFragmentInDB(fragmentID string, fileFragment string) int32 {
 func getFileFragmentFromDB(fragmentID string) (string, int32) {
 	mutex.Lock()
 	defer mutex.Unlock()
+	fmt.Fprintln(os.Stdout, fragmentID)
 	data, err := db.Get([]byte(fragmentID), nil)
 	if err != nil {
 		return "", 1

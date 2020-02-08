@@ -1,4 +1,5 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+load("@rules_foreign_cc//tools/build_defs:cmake.bzl", "cmake_external")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("@rules_proto_grpc//go:defs.bzl", "go_grpc_library")
 load("@rules_proto_grpc//cpp:defs.bzl", "cpp_grpc_library")
@@ -27,24 +28,36 @@ go_grpc_library(
     visibility = ["//visibility:public"],
 )
 
+cmake_external(
+    name = "leveldb",
+    cache_entries = {
+        "CMAKE_BUILD_TYPE": "Release"
+    },
+    lib_source = "@com_google_leveldb//:all",
+    headers_only = True,
+    # out_include_dir = "include/leveldb",
+    visibility = ["//visibility:__pkg__"],
+)
 cc_library(
     name = "drone_daemon_library",
     srcs = [
-        "fileController.cc",
-        "fileContainer.cc",
-        "serializeUtil.cc",
         "droneService.hpp",
+        "fileContainer.cc",
+        "fileController.cc",
         "main.cc",
+        "serializeUtil.cc",
     ],
     hdrs = [
-        "fileController.hpp",
-        "fileContainer.hpp",
-        "serializeUtil.hpp",
         "constants.hpp",
+        "dbService.hpp",
+        "fileContainer.hpp",
+        "fileController.hpp",
+        "serializeUtil.hpp",
     ],
     deps = [
         ":drone_proto_cc",
         ":drone_db_service.cc",
+        ":leveldb",
         "@com_google_protobuf//:protobuf_lite",
         "@boost//:uuid",
         "@boost//:thread",

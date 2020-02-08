@@ -3,9 +3,9 @@
 FileContainer::FileContainer() {}
 
 
-FileContainer::FileContainer(std::string& filePath, int& totalFragments) {
-  filePath = filePath;
-  totalFragments = totalFragments;
+FileContainer::FileContainer(std::string& _filePath, int& _totalFragments) {
+  filePath = _filePath;
+  totalFragments = _totalFragments;
 };
 
 FileContainer::~FileContainer() {};

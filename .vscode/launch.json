@@ -13,7 +13,7 @@
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}/bazel-drone/",
       "environment": [],
-      // "preLaunchTask": "Build Drone (Debug)",
+      "preLaunchTask": "Build Drone (Debug)",
       "externalConsole": false,
       "MIMode": "gdb",
       "setupCommands": [
